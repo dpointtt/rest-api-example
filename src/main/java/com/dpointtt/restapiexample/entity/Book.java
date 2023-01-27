@@ -1,5 +1,6 @@
 package com.dpointtt.restapiexample.entity;
 
+import com.dpointtt.restapiexample.dto.BookDTO;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -25,4 +26,5 @@ public class Book {
 
     @ManyToOne(fetch = FetchType.LAZY)
     private Category category;
+
 }
