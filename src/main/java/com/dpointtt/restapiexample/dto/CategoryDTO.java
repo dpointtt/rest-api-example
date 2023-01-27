@@ -1,4 +1,10 @@
 package com.dpointtt.restapiexample.dto;
 
-public record CategoryDTO() {
+import java.util.List;
+
+public record CategoryDTO(
+        Long id,
+        String categoryName,
+        List<BookDTO> books
+) {
 }
