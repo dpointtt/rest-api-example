@@ -1,11 +1,13 @@
 package com.dpointtt.restapiexample.service;
 
 import com.dpointtt.restapiexample.dto.BookDTO;
+import com.dpointtt.restapiexample.dto.BookUpdateRequest;
 import com.dpointtt.restapiexample.entity.Book;
 import com.dpointtt.restapiexample.repository.BookRepository;
 import com.dpointtt.restapiexample.repository.CategoryRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -44,14 +46,38 @@ public class BookService {
         bookRepository.delete(bookRepository.findById(id).orElseThrow(() -> new RuntimeException("Not found")));
     }
 
-    public BookDTO addNewBook(BookDTO bookDTO){
-        Optional<Book> book = Optional.of(new Book(bookDTO.id(), bookDTO.title(), bookDTO.author(),
-                categoryRepository.findCategoryByCategoryName(bookDTO.category())
-                        .orElseThrow(() -> new RuntimeException("Category not found"))));
-
-        bookRepository.save(book.orElseThrow());
-
-        return book.map(bookDTOMapper).orElseThrow(() -> new RuntimeException("Error"));
+    public BookDTO addNewBook(BookUpdateRequest bookUpdateRequest){
+        return Optional.of(bookRepository.save(
+                new Book(
+                        null,
+                        bookUpdateRequest.title(),
+                        bookUpdateRequest.author(),
+                categoryRepository.findCategoryByCategoryName(bookUpdateRequest.category())
+                        .orElseThrow(() -> new RuntimeException("Category not found")))))
+                .map(bookDTOMapper)
+                .orElseThrow(() -> new RuntimeException("Error creating object"));
     }
 
+    @Transactional
+    public BookDTO updateBookById(Long id, BookUpdateRequest bookUpdateRequest){
+        Book book = bookRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Book not found"));
+
+        book.setTitle(bookUpdateRequest.title());
+        book.setAuthor(bookUpdateRequest.author());
+        book.setCategory(categoryRepository.findCategoryByCategoryName(bookUpdateRequest.category())
+                .orElseThrow(() -> new RuntimeException("Category not found")));
+
+        return Optional.of(bookRepository.save(book))
+                .map(bookDTOMapper)
+                .orElseThrow(() -> new RuntimeException("Error updating object"));
+    }
+
+    public List<BookDTO> getBooksByCategory(String categoryName) {
+        return bookRepository
+                .findBooksByCategory_CategoryName(categoryName)
+                .stream()
+                .map(bookDTOMapper)
+                .collect(Collectors.toList());
+    }
 }
